@@ -10,66 +10,77 @@
 (function() {
     'use strict';
 
-    console.log("🟢 Colleague Multi-Search Script Loaded!");
+    // 1. MASTER CONFIGURATION
+    // Edit this list to add/change buttons and shortcuts
+    const searchCommands = [
+        { key: 'Numpad1', label: 'APPN', color: '#00539b' }, // Blue
+        { key: 'Numpad2', label: 'XDSM', color: '#007a33' }, // Forest Green
+        { key: 'Numpad3', label: 'DADD', color: '#c8102e' }, // Crimson
+        { key: 'Numpad4', label: 'NAE',  color: '#5e35b1' }, // Deep Purple
+        { key: 'Numpad5', label: 'EPRG', color: '#fb8c00' }, // Orange
+        { key: 'Numpad6', label: 'OUAC', color: '#00acc1' }, // Cyan
+        { key: 'Numpad7', label: 'ITCI', color: '#43a047' }  // Green
+    ];
 
-    // Use 'formCode' here so the function knows what to type
+    // 2. CORE SEARCH ENGINE
     function executeColleagueSearch(formCode) {
-        console.log(`Executing search sequence for: ${formCode}`);
-
+        console.log(`⚙️ Searching: ${formCode}`);
         const searchBtn = document.getElementById('btnFormSearch');
-        if (!searchBtn) {
-            console.error("❌ Could NOT find the Form Search button.");
-            return;
-        }
+        if (!searchBtn) return;
 
         searchBtn.click();
 
         setTimeout(() => {
             const inputBox = document.getElementById('form-search');
-
             if (inputBox) {
                 inputBox.focus();
-
-                // Inject the specific code passed into the function
                 inputBox.value = formCode;
-
                 inputBox.dispatchEvent(new Event('input', { bubbles: true }));
                 inputBox.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }));
-
-                console.log(`✅ Search executed successfully for ${formCode}!`);
-            } else {
-                console.error("❌ Could NOT find the input box.");
             }
         }, 300);
     }
 
-    // --- KEYBOARD SHORTCUT ROUTER ---
+    // 3. GENERATE THE VERTICAL TOOLBAR
+    (function createToolbar() {
+        const tray = document.createElement('div');
+        Object.assign(tray.style, {
+            position: 'fixed', top: '15%', right: '15px', zIndex: '10000',
+            display: 'flex', flexDirection: 'column', gap: '6px',
+            padding: '8px', backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(8px)', borderRadius: '10px',
+            border: '1px solid rgba(255, 255, 255, 0.2)', boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+        });
 
+        searchCommands.forEach(item => {
+            const btn = document.createElement('button');
+            btn.innerHTML = item.label;
+            Object.assign(btn.style, {
+                padding: '8px 12px', backgroundColor: item.color, color: 'white',
+                border: 'none', borderRadius: '6px', cursor: 'pointer',
+                fontSize: '11px', fontWeight: 'bold', transition: 'all 0.1s'
+            });
+
+            btn.onclick = () => executeColleagueSearch(item.label);
+            btn.onmouseover = () => btn.style.filter = 'brightness(1.2)';
+            btn.onmouseout = () => btn.style.filter = 'brightness(1.0)';
+
+            tray.appendChild(btn);
+        });
+
+        document.body.appendChild(tray);
+    })();
+
+    // 4. KEYBOARD SHORTCUT LISTENER
     window.addEventListener('keydown', function(e) {
-        // Check if Ctrl and Alt are currently being held down
         if (e.ctrlKey && e.altKey) {
-
-            let codeToSearch = null;
-
-            // Figure out which Numpad key was pressed and assign the right code
-            switch(e.code) {
-                case 'Numpad1':
-                    codeToSearch = 'APPN';
-                    break;
-                case 'Numpad2':
-                    codeToSearch = 'XDSM';
-                    break;
-                case 'Numpad3':
-                    codeToSearch = 'DADD';
-                    break;
-            }
-
-            // If a valid Numpad key was pressed, stop default browser behavior and fire the search
-            if (codeToSearch !== null) {
+            const match = searchCommands.find(cmd => cmd.key === e.code);
+            if (match) {
                 e.preventDefault();
-                executeColleagueSearch(codeToSearch);
+                executeColleagueSearch(match.label);
             }
         }
     });
 
+    console.log("🟢 Colleague Command Center Active (Numpad 1-7)");
 })();
